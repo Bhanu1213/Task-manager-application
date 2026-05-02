@@ -2,28 +2,22 @@
 # Task Manager Application Dependencies
 
 # Core Web Framework
-Flask==2.3.3
+Flask
 
 # Database ORM
-Flask-SQLAlchemy==3.0.5
+Flask-SQLAlchemy
 
 # User Authentication & Session Management
-Flask-Login==0.6.2
+Flask-Login
 
 # Password Hashing & Security
-Flask-Bcrypt==1.0.1
+Flask-Bcrypt
 
 # PostgreSQL Database Adapter (for production deployment)
-psycopg2-binary==2.9.9
+psycopg2-binary
 
 # Environment Variable Management
 python-dotenv==1.0.0
 
-# Production WSGI HTTP Server (for deployment)
-gunicorn==21.2.0
-
-# WSGI Utilities
-Werkzeug==2.3.7
-
 # Email Validation (for email field validation)
-email-validator==2.1.0
+email-validator
