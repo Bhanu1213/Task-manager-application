@@ -1,0 +1,49 @@
+{# templates/tasks.html #}
+{% extends "base.html" %}
+
+{% block title %}My Tasks{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 30px;">📋 My Tasks</h1>
+
+<div class="grid">
+    {% for task in tasks %}
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+            <h3>{{ task.title }}</h3>
+            <span class="badge badge-{{ task.status }}">{{ task.status.replace('_', ' ') }}</span>
+        </div>
+        
+        <p style="color: #666; margin: 10px 0;">{{ task.description or 'No description' }}</p>
+        
+        <div style="margin: 10px 0;">
+            <span class="badge badge-{{ task.priority }}">{{ task.priority.upper() }}</span>
+            <span style="font-size: 12px; margin-left: 10px;">📁 {{ task.project.name }}</span>
+        </div>
+        
+        {% if task.due_date %}
+        <div style="font-size: 12px; color: #666; margin-bottom: 15px;">
+            📅 Due: {{ task.due_date }}
+            {% if task.due_date < today and task.status != 'completed' %}
+            <span style="color: #ef4444;"> (Overdue!)</span>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <form method="POST" action="{{ url_for('update_task_status', task_id=task.id) }}">
+            <select name="status" onchange="this.form.submit()" class="form-control" style="width: auto; display: inline-block;">
+                <option value="pending" {% if task.status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                <option value="completed" {% if task.status == 'completed' %}selected{% endif %}>Completed</option>
+            </select>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+
+{% if tasks|length == 0 %}
+<div class="card" style="text-align: center;">
+    <p>No tasks assigned to you yet.</p>
+</div>
+{% endif %}
+{% endblock %}

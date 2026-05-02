@@ -1,0 +1,63 @@
+{# templates/dashboard.html #}
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 10px;">Welcome back, {{ current_user.name }}! 👋</h1>
+<p style="color: #666; margin-bottom: 30px;">Here's what's happening with your projects today.</p>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div style="font-size: 14px; color: #666;">Total Projects</div>
+        <div class="stat-number">{{ stats.total_projects }}</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size: 14px; color: #666;">Total Tasks</div>
+        <div class="stat-number">{{ stats.total_tasks }}</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size: 14px; color: #666;">Pending Tasks</div>
+        <div class="stat-number" style="color: #f59e0b;">{{ stats.pending_tasks }}</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size: 14px; color: #666;">Completed Tasks</div>
+        <div class="stat-number" style="color: #10b981;">{{ stats.completed_tasks }}</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size: 14px; color: #666;">In Progress</div>
+        <div class="stat-number" style="color: #3b82f6;">{{ stats.in_progress_tasks }}</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size: 14px; color: #666;">Overdue Tasks</div>
+        <div class="stat-number" style="color: #ef4444;">{{ stats.overdue_tasks }}</div>
+    </div>
+</div>
+
+{% if recent_tasks %}
+<div class="card">
+    <h3 style="margin-bottom: 20px;">📋 Recent Tasks</h3>
+    {% for task in recent_tasks %}
+    <div style="padding: 15px; border-bottom: 1px solid #e2e8f0;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>{{ task.title }}</strong>
+                <div style="font-size: 12px; color: #666;">{{ task.project.name if task.project else 'No project' }}</div>
+            </div>
+            <div>
+                <span class="badge badge-{{ task.status }}">{{ task.status.replace('_', ' ') }}</span>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card" style="margin-top: 20px;">
+    <h3>Quick Actions</h3>
+    <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <a href="{{ url_for('projects') }}" class="btn btn-primary">View Projects</a>
+        <a href="{{ url_for('my_tasks') }}" class="btn btn-secondary">My Tasks</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,151 @@
+{# templates/project_detail.html #}
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="{{ url_for('projects') }}" style="color: #667eea;">← Back to Projects</a>
+</div>
+
+<div class="card" style="margin-bottom: 20px;">
+    <h1>{{ project.name }}</h1>
+    <p style="color: #666; margin-top: 10px;">{{ project.description or 'No description' }}</p>
+    {% if project.deadline %}
+    <div style="margin-top: 10px;">📅 Deadline: {{ project.deadline }}</div>
+    {% endif %}
+</div>
+
+<div style="display: flex; gap: 20px; margin-bottom: 20px;">
+    <div class="card" style="flex: 2;">
+        <h3>📝 Tasks</h3>
+        
+        {% if current_user.role == 'admin' %}
+        <button class="btn btn-primary" onclick="openTaskModal()" style="margin: 15px 0;">+ Add Task</button>
+        {% endif %}
+        
+        {% for task in tasks %}
+        <div style="padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div style="flex: 1;">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+                        <strong>{{ task.title }}</strong>
+                        <span class="badge badge-{{ task.priority }}">{{ task.priority.upper() }}</span>
+                        <span class="badge badge-{{ task.status }}">{{ task.status.replace('_', ' ') }}</span>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">{{ task.description or 'No description' }}</p>
+                    <div style="font-size: 12px; color: #666; margin-top: 8px;">
+                        Assigned to: {{ task.assignee.name if task.assignee else 'Unassigned' }}
+                        {% if task.due_date %}
+                        | Due: {{ task.due_date }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('delete_task', task_id=task.id) }}" class="btn btn-danger" style="font-size: 12px;" onclick="return confirm('Delete this task?')">Delete</a>
+                    {% elif task.assigned_to == current_user.id %}
+                    <form method="POST" action="{{ url_for('update_task_status', task_id=task.id) }}" style="display: inline;">
+                        <select name="status" onchange="this.form.submit()" style="padding: 5px; border-radius: 5px;">
+                            <option value="pending" {% if task.status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                            <option value="completed" {% if task.status == 'completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if tasks|length == 0 %}
+        <p style="color: #666; text-align: center; padding: 40px;">No tasks yet</p>
+        {% endif %}
+    </div>
+    
+    <div class="card" style="flex: 1;">
+        <h3>👥 Team Members</h3>
+        <div style="margin-top: 15px;">
+            {% for member, user in members %}
+            <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
+                <strong>{{ user.name }}</strong>
+                <div style="font-size: 12px; color: #666;">{{ user.email }}</div>
+                <div style="font-size: 11px;">Role: {{ member.role }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if current_user.role == 'admin' and available_users %}
+        <h4 style="margin-top: 20px;">Add Member</h4>
+        <form method="POST" action="{{ url_for('add_member', project_id=project.id) }}">
+            <select name="user_id" class="form-control" required>
+                <option value="">Select user</option>
+                {% for user in available_users %}
+                <option value="{{ user.id }}">{{ user.name }} ({{ user.email }})</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary" style="margin-top: 10px; width: 100%;">Add Member</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div id="taskModal" class="modal">
+    <div class="modal-content">
+        <h2 style="margin-bottom: 20px;">Create New Task</h2>
+        <form method="POST" action="{{ url_for('create_task') }}">
+            <input type="hidden" name="project_id" value="{{ project.id }}">
+            <div class="form-group">
+                <label>Task Title *</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Assign To</label>
+                <select name="assigned_to" class="form-control">
+                    <option value="">Unassigned</option>
+                    {% for member, user in members %}
+                    <option value="{{ user.id }}">{{ user.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Due Date</label>
+                <input type="date" name="due_date" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Priority</label>
+                <select name="priority" class="form-control">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">Create Task</button>
+                <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openTaskModal() {
+        document.getElementById('taskModal').style.display = 'flex';
+    }
+    
+    function closeTaskModal() {
+        document.getElementById('taskModal').style.display = 'none';
+    }
+    
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('taskModal')) {
+            closeTaskModal();
+        }
+    }
+</script>
+{% endblock %}
