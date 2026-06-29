@@ -65,10 +65,3 @@ A comprehensive task management system with role-based access control (Admin/Mem
 ### Prerequisites
 - Python 3.8 or higher
 - pip (Python package manager)
-
-### Step-by-Step Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/yourusername/task-manager.git
-cd task-manager
